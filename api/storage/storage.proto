@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package storage;
+
+option go_package = "github.com/pashest/object-storage-service/pkg/storage;storage";
+
+service StorageService {
+  rpc UploadChunks(stream UploadChunksRequest) returns (UploadChunksResponse);
+
+  rpc GetChunks(GetChunksRequest) returns (stream GetChunksResponse);
+}
+
+message UploadChunksRequest {
+  string chunk_id = 1;
+  bytes data = 2;
+}
+
+message UploadChunksResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetChunksRequest {
+  repeated string chunk_ids = 1;
+}
+
+message GetChunksResponse {
+  string chunk_id = 1;
+  bytes data = 2;
+}

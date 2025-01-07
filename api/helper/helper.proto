@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package helper;
+
+option go_package = "github.com/pashest/object-storage-service/pkg/helper;helper";
+
+import "google/api/annotations.proto";
+
+service HelperService {
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {
+    option (google.api.http) = {
+      get: "/v1/helper/heartbeat"
+    };
+  };
+}
+
+message HeartbeatRequest {
+  string server_id = 1;
+}
+
+message HeartbeatResponse {
+  bool alive = 1;
+  string message = 2;
+  int64 free_space = 3;
+}
