@@ -28,14 +28,6 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "server_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
         "tags": [
           "HelperService"
         ]

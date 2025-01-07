@@ -5,17 +5,14 @@ package helper;
 option go_package = "github.com/pashest/object-storage-service/pkg/helper;helper";
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 service HelperService {
-  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {
+  rpc Heartbeat(google.protobuf.Empty) returns (HeartbeatResponse) {
     option (google.api.http) = {
       get: "/v1/helper/heartbeat"
     };
   };
-}
-
-message HeartbeatRequest {
-  string server_id = 1;
 }
 
 message HeartbeatResponse {

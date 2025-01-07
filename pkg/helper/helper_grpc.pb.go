@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HelperServiceClient interface {
-	Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
+	Heartbeat(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*HeartbeatResponse, error)
 }
 
 type helperServiceClient struct {
@@ -37,7 +38,7 @@ func NewHelperServiceClient(cc grpc.ClientConnInterface) HelperServiceClient {
 	return &helperServiceClient{cc}
 }
 
-func (c *helperServiceClient) Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
+func (c *helperServiceClient) Heartbeat(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(HeartbeatResponse)
 	err := c.cc.Invoke(ctx, HelperService_Heartbeat_FullMethodName, in, out, cOpts...)
@@ -51,7 +52,7 @@ func (c *helperServiceClient) Heartbeat(ctx context.Context, in *HeartbeatReques
 // All implementations must embed UnimplementedHelperServiceServer
 // for forward compatibility.
 type HelperServiceServer interface {
-	Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
+	Heartbeat(context.Context, *emptypb.Empty) (*HeartbeatResponse, error)
 	mustEmbedUnimplementedHelperServiceServer()
 }
 
@@ -62,7 +63,7 @@ type HelperServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedHelperServiceServer struct{}
 
-func (UnimplementedHelperServiceServer) Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error) {
+func (UnimplementedHelperServiceServer) Heartbeat(context.Context, *emptypb.Empty) (*HeartbeatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
 }
 func (UnimplementedHelperServiceServer) mustEmbedUnimplementedHelperServiceServer() {}
@@ -87,7 +88,7 @@ func RegisterHelperServiceServer(s grpc.ServiceRegistrar, srv HelperServiceServe
 }
 
 func _HelperService_Heartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HeartbeatRequest)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -99,7 +100,7 @@ func _HelperService_Heartbeat_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: HelperService_Heartbeat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HelperServiceServer).Heartbeat(ctx, req.(*HeartbeatRequest))
+		return srv.(HelperServiceServer).Heartbeat(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
