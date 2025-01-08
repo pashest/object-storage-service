@@ -1,3 +1,14 @@
+.PHONY: build
+build: build-server build-storage
+
+.PHONY: build-server
+build-server:
+	CGO_ENABLED=0 GOOS=linux go build -o bin/server cmd/server/main.go
+
+.PHONY: build-storage
+build-storage:
+	CGO_ENABLED=0 GOOS=linux go build -o bin/storage cmd/storage-server/main.go
+
 .PHONY: generate
 generate: vendor-proto .generate
 
@@ -27,27 +38,6 @@ generate: vendor-proto .generate
 				api/storage/storage.proto
 		mv pkg/storage/github.com/pashest/object-storage-service/pkg/storage/* pkg/storage/
 		rm -rf pkg/storage/github.com
-
-.PHONY: vendor-proto
-vendor-proto: .vendor-proto
-
-.PHONY: .vendor-proto
-.vendor-proto:
-		mkdir -p vendor.protogen
-		mkdir -p vendor.protogen/api/helper
-		mkdir -p vendor.protogen/api/storage
-		cp api/helper/helper.proto vendor.protogen/api/helper
-		cp api/storage/storage.proto vendor.protogen/api/storage
-		@if [ ! -d vendor.protogen/google ]; then \
-			git clone https://github.com/googleapis/googleapis vendor.protogen/googleapis &&\
-			mkdir -p  vendor.protogen/google/ &&\
-			mv vendor.protogen/googleapis/google/api vendor.protogen/google &&\
-			rm -rf vendor.protogen/googleapis ;\
-		fi
-		@if [ ! -d vendor.protogen/github.com/envoyproxy ]; then \
-			mkdir -p vendor.protogen/github.com/envoyproxy &&\
-			git clone https://github.com/envoyproxy/protoc-gen-validate vendor.protogen/github.com/envoyproxy/protoc-gen-validate ;\
-		fi
 
 
 .PHONY: deps

@@ -2,10 +2,11 @@ package storage
 
 import (
 	"context"
+	"fmt"
+	"io"
 
 	desc "github.com/pashest/object-storage-service/pkg/storage"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Client define client for work with PromoCodeClient
@@ -14,12 +15,8 @@ type Client struct {
 }
 
 // New return new instance of Client
-func New(serviceName string) (*Client, error) {
-	conn, err := grpc.NewClient(serviceName, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, err
-	}
-	return &Client{client: desc.NewStorageServiceClient(conn)}, nil
+func New(conn *grpc.ClientConn) *Client {
+	return &Client{client: desc.NewStorageServiceClient(conn)}
 }
 
 // UploadChunks method for upload chunks
@@ -40,21 +37,26 @@ func (c *Client) UploadChunks(ctx context.Context, chunkID string, data []byte) 
 }
 
 // GetChunks method for getting chunks
-func (c *Client) GetChunks(ctx context.Context, chunkIDs []string) error {
+func (c *Client) GetChunks(ctx context.Context, chunkIDs []string) (map[string][]byte, error) {
 	stream, err := c.client.GetChunks(ctx, &desc.GetChunksRequest{
 		ChunkIds: chunkIDs,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	defer func() {
-		for {
-			if _, err = stream.Recv(); err != nil {
-				break
-			}
+	chunks := make(map[string][]byte)
+	for {
+		resp, err := stream.Recv()
+		if err == io.EOF {
+			break
 		}
-	}()
+		if err != nil {
+			return nil, fmt.Errorf("failed to receive chunk response: %w", err)
+		}
 
-	return nil
+		chunks[resp.GetChunkId()] = resp.Data
+	}
+
+	return chunks, nil
 }

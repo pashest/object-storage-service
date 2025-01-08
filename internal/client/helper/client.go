@@ -5,7 +5,6 @@ import (
 
 	desc "github.com/pashest/object-storage-service/pkg/helper"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Client define client for work with PromoCodeClient
@@ -14,12 +13,8 @@ type Client struct {
 }
 
 // New return new instance of Client
-func New(serviceName string) (*Client, error) {
-	conn, err := grpc.NewClient(serviceName, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, err
-	}
-	return &Client{client: desc.NewHelperServiceClient(conn)}, nil
+func New(conn *grpc.ClientConn) *Client {
+	return &Client{client: desc.NewHelperServiceClient(conn)}
 }
 
 // Heartbeat method for checking health of storage server

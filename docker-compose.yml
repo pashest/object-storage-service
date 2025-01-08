@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: build/server/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - storage-server-1
+      - storage-server-2
+      - storage-server-3
+      - storage-server-4
+      - storage-server-5
+      - storage-server-6
+    environment:
+      STORAGE_SERVERS: "storage-server-1:50051,storage-server-2:50051,storage-server-3:50051,storage-server-4:50051,storage-server-5:50051,storage-server-6:50051"
+
+  storage-server-1:
+    build:
+      context: .
+      dockerfile: build/storage-server/Dockerfile
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./data/storage-1:/app/storage
+
+  storage-server-2:
+    build:
+      context: .
+      dockerfile: build/storage-server/Dockerfile
+    ports:
+      - "50052:50051"
+    volumes:
+      - ./data/storage-2:/app/storage
+
+  storage-server-3:
+    build:
+      context: .
+      dockerfile: build/storage-server/Dockerfile
+    ports:
+      - "50053:50051"
+    volumes:
+      - ./data/storage-3:/app/storage
+
+  storage-server-4:
+    build:
+      context: .
+      dockerfile: build/storage-server/Dockerfile
+    ports:
+      - "50054:50051"
+    volumes:
+      - ./data/storage-4:/app/storage
+
+  storage-server-5:
+    build:
+      context: .
+      dockerfile: build/storage-server/Dockerfile
+    ports:
+      - "50055:50051"
+    volumes:
+      - ./data/storage-5:/app/storage
+
+  storage-server-6:
+    build:
+      context: .
+      dockerfile: build/storage-server/Dockerfile
+    ports:
+      - "50056:50051"
+    volumes:
+      - ./data/storage-6:/app/storage
