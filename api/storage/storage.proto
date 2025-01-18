@@ -7,7 +7,7 @@ option go_package = "github.com/pashest/object-storage-service/pkg/storage;stora
 service StorageService {
   rpc UploadChunks(stream UploadChunksRequest) returns (UploadChunksResponse);
 
-  rpc GetChunks(GetChunksRequest) returns (stream GetChunksResponse);
+  rpc GetChunk(GetChunkRequest) returns (stream GetChunkResponse);
 }
 
 message UploadChunksRequest {
@@ -20,11 +20,11 @@ message UploadChunksResponse {
   string message = 2;
 }
 
-message GetChunksRequest {
-  repeated string chunk_ids = 1;
+message GetChunkRequest {
+  string chunk_id = 1;
 }
 
-message GetChunksResponse {
+message GetChunkResponse {
   string chunk_id = 1;
   bytes data = 2;
 }

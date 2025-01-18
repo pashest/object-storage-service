@@ -247,42 +247,44 @@ var _ interface {
 	ErrorName() string
 } = UploadChunksResponseValidationError{}
 
-// Validate checks the field values on GetChunksRequest with the rules defined
+// Validate checks the field values on GetChunkRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
-func (m *GetChunksRequest) Validate() error {
+func (m *GetChunkRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetChunksRequest with the rules
+// ValidateAll checks the field values on GetChunkRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// GetChunksRequestMultiError, or nil if none found.
-func (m *GetChunksRequest) ValidateAll() error {
+// GetChunkRequestMultiError, or nil if none found.
+func (m *GetChunkRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetChunksRequest) validate(all bool) error {
+func (m *GetChunkRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
+	// no validation rules for ChunkId
+
 	if len(errors) > 0 {
-		return GetChunksRequestMultiError(errors)
+		return GetChunkRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetChunksRequestMultiError is an error wrapping multiple validation errors
-// returned by GetChunksRequest.ValidateAll() if the designated constraints
+// GetChunkRequestMultiError is an error wrapping multiple validation errors
+// returned by GetChunkRequest.ValidateAll() if the designated constraints
 // aren't met.
-type GetChunksRequestMultiError []error
+type GetChunkRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetChunksRequestMultiError) Error() string {
+func (m GetChunkRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -291,11 +293,11 @@ func (m GetChunksRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetChunksRequestMultiError) AllErrors() []error { return m }
+func (m GetChunkRequestMultiError) AllErrors() []error { return m }
 
-// GetChunksRequestValidationError is the validation error returned by
-// GetChunksRequest.Validate if the designated constraints aren't met.
-type GetChunksRequestValidationError struct {
+// GetChunkRequestValidationError is the validation error returned by
+// GetChunkRequest.Validate if the designated constraints aren't met.
+type GetChunkRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -303,22 +305,22 @@ type GetChunksRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetChunksRequestValidationError) Field() string { return e.field }
+func (e GetChunkRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetChunksRequestValidationError) Reason() string { return e.reason }
+func (e GetChunkRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetChunksRequestValidationError) Cause() error { return e.cause }
+func (e GetChunkRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetChunksRequestValidationError) Key() bool { return e.key }
+func (e GetChunkRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetChunksRequestValidationError) ErrorName() string { return "GetChunksRequestValidationError" }
+func (e GetChunkRequestValidationError) ErrorName() string { return "GetChunkRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e GetChunksRequestValidationError) Error() string {
+func (e GetChunkRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -330,14 +332,14 @@ func (e GetChunksRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetChunksRequest.%s: %s%s",
+		"invalid %sGetChunkRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetChunksRequestValidationError{}
+var _ error = GetChunkRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -345,24 +347,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetChunksRequestValidationError{}
+} = GetChunkRequestValidationError{}
 
-// Validate checks the field values on GetChunksResponse with the rules defined
+// Validate checks the field values on GetChunkResponse with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
-func (m *GetChunksResponse) Validate() error {
+func (m *GetChunkResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetChunksResponse with the rules
+// ValidateAll checks the field values on GetChunkResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// GetChunksResponseMultiError, or nil if none found.
-func (m *GetChunksResponse) ValidateAll() error {
+// GetChunkResponseMultiError, or nil if none found.
+func (m *GetChunkResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetChunksResponse) validate(all bool) error {
+func (m *GetChunkResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -374,19 +376,19 @@ func (m *GetChunksResponse) validate(all bool) error {
 	// no validation rules for Data
 
 	if len(errors) > 0 {
-		return GetChunksResponseMultiError(errors)
+		return GetChunkResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetChunksResponseMultiError is an error wrapping multiple validation errors
-// returned by GetChunksResponse.ValidateAll() if the designated constraints
+// GetChunkResponseMultiError is an error wrapping multiple validation errors
+// returned by GetChunkResponse.ValidateAll() if the designated constraints
 // aren't met.
-type GetChunksResponseMultiError []error
+type GetChunkResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetChunksResponseMultiError) Error() string {
+func (m GetChunkResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -395,11 +397,11 @@ func (m GetChunksResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetChunksResponseMultiError) AllErrors() []error { return m }
+func (m GetChunkResponseMultiError) AllErrors() []error { return m }
 
-// GetChunksResponseValidationError is the validation error returned by
-// GetChunksResponse.Validate if the designated constraints aren't met.
-type GetChunksResponseValidationError struct {
+// GetChunkResponseValidationError is the validation error returned by
+// GetChunkResponse.Validate if the designated constraints aren't met.
+type GetChunkResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -407,24 +409,22 @@ type GetChunksResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetChunksResponseValidationError) Field() string { return e.field }
+func (e GetChunkResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetChunksResponseValidationError) Reason() string { return e.reason }
+func (e GetChunkResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetChunksResponseValidationError) Cause() error { return e.cause }
+func (e GetChunkResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetChunksResponseValidationError) Key() bool { return e.key }
+func (e GetChunkResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetChunksResponseValidationError) ErrorName() string {
-	return "GetChunksResponseValidationError"
-}
+func (e GetChunkResponseValidationError) ErrorName() string { return "GetChunkResponseValidationError" }
 
 // Error satisfies the builtin error interface
-func (e GetChunksResponseValidationError) Error() string {
+func (e GetChunkResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -436,14 +436,14 @@ func (e GetChunksResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetChunksResponse.%s: %s%s",
+		"invalid %sGetChunkResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetChunksResponseValidationError{}
+var _ error = GetChunkResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -451,4 +451,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetChunksResponseValidationError{}
+} = GetChunkResponseValidationError{}

@@ -9,6 +9,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const maxMessageSize = 2 * 1024 * 1024 * 1024 // 2 GB
+
 type ClientPool struct {
 	mu          sync.RWMutex
 	connections map[string]*grpc.ClientConn
@@ -33,7 +35,10 @@ func (p *ClientPool) AddConnection(address string) error {
 		return nil
 	}
 
-	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxMessageSize)),
+	)
 	if err != nil {
 		return err
 	}

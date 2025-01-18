@@ -8,41 +8,44 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// GetChunks method for getting chunks
-func (i *Implementation) GetChunks(req *desc.GetChunksRequest, stream desc.StorageService_GetChunksServer) error {
-	for _, chunkID := range req.GetChunkIds() {
-		data, err := readChunk(chunkID)
+const (
+	blockSize  = 4 * 1024 * 1024
+	storageDir = "storage_dir/"
+)
 
+// GetChunk method for getting chunks
+func (i *Implementation) GetChunk(req *desc.GetChunkRequest, stream desc.StorageService_GetChunkServer) error {
+	chunkID := req.GetChunkId()
+	file, err := os.Open(storageDir + chunkID)
+	if err != nil {
+		log.Printf("Failed to open chunk %s: %v", chunkID, err)
+		return err
+	}
+	defer file.Close()
+
+	buffer := make([]byte, blockSize)
+	for {
+		n, err := file.Read(buffer)
+		if n > 0 {
+			err = stream.Send(&desc.GetChunkResponse{
+				ChunkId: chunkID,
+				Data:    buffer[:n],
+			})
+			if err != nil {
+				log.Printf("Failed to send chunk %s: %v", chunkID, err)
+				return err
+			}
+		}
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
 			log.Printf("Failed to read chunk %s: %v", chunkID, err)
 			return err
 		}
-
-		err = stream.Send(&desc.GetChunksResponse{
-			ChunkId: chunkID,
-			Data:    data,
-		})
-		if err != nil {
-			log.Printf("Failed to send chunk %s: %v", chunkID, err)
-			return err
-		}
 	}
+
+	log.Printf("Sent chunk %s: %v", chunkID, err)
 
 	return nil
-}
-
-func readChunk(chunkID string) ([]byte, error) {
-	fileName := "storage_dir/" + chunkID
-	file, err := os.Open(fileName)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }

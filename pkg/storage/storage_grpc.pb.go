@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	StorageService_UploadChunks_FullMethodName = "/storage.StorageService/UploadChunks"
-	StorageService_GetChunks_FullMethodName    = "/storage.StorageService/GetChunks"
+	StorageService_GetChunk_FullMethodName     = "/storage.StorageService/GetChunk"
 )
 
 // StorageServiceClient is the client API for StorageService service.
@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StorageServiceClient interface {
 	UploadChunks(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadChunksRequest, UploadChunksResponse], error)
-	GetChunks(ctx context.Context, in *GetChunksRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetChunksResponse], error)
+	GetChunk(ctx context.Context, in *GetChunkRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetChunkResponse], error)
 }
 
 type storageServiceClient struct {
@@ -52,13 +52,13 @@ func (c *storageServiceClient) UploadChunks(ctx context.Context, opts ...grpc.Ca
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type StorageService_UploadChunksClient = grpc.ClientStreamingClient[UploadChunksRequest, UploadChunksResponse]
 
-func (c *storageServiceClient) GetChunks(ctx context.Context, in *GetChunksRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetChunksResponse], error) {
+func (c *storageServiceClient) GetChunk(ctx context.Context, in *GetChunkRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetChunkResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &StorageService_ServiceDesc.Streams[1], StorageService_GetChunks_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &StorageService_ServiceDesc.Streams[1], StorageService_GetChunk_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[GetChunksRequest, GetChunksResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetChunkRequest, GetChunkResponse]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -69,14 +69,14 @@ func (c *storageServiceClient) GetChunks(ctx context.Context, in *GetChunksReque
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StorageService_GetChunksClient = grpc.ServerStreamingClient[GetChunksResponse]
+type StorageService_GetChunkClient = grpc.ServerStreamingClient[GetChunkResponse]
 
 // StorageServiceServer is the server API for StorageService service.
 // All implementations must embed UnimplementedStorageServiceServer
 // for forward compatibility.
 type StorageServiceServer interface {
 	UploadChunks(grpc.ClientStreamingServer[UploadChunksRequest, UploadChunksResponse]) error
-	GetChunks(*GetChunksRequest, grpc.ServerStreamingServer[GetChunksResponse]) error
+	GetChunk(*GetChunkRequest, grpc.ServerStreamingServer[GetChunkResponse]) error
 	mustEmbedUnimplementedStorageServiceServer()
 }
 
@@ -90,8 +90,8 @@ type UnimplementedStorageServiceServer struct{}
 func (UnimplementedStorageServiceServer) UploadChunks(grpc.ClientStreamingServer[UploadChunksRequest, UploadChunksResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method UploadChunks not implemented")
 }
-func (UnimplementedStorageServiceServer) GetChunks(*GetChunksRequest, grpc.ServerStreamingServer[GetChunksResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method GetChunks not implemented")
+func (UnimplementedStorageServiceServer) GetChunk(*GetChunkRequest, grpc.ServerStreamingServer[GetChunkResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GetChunk not implemented")
 }
 func (UnimplementedStorageServiceServer) mustEmbedUnimplementedStorageServiceServer() {}
 func (UnimplementedStorageServiceServer) testEmbeddedByValue()                        {}
@@ -121,16 +121,16 @@ func _StorageService_UploadChunks_Handler(srv interface{}, stream grpc.ServerStr
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type StorageService_UploadChunksServer = grpc.ClientStreamingServer[UploadChunksRequest, UploadChunksResponse]
 
-func _StorageService_GetChunks_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetChunksRequest)
+func _StorageService_GetChunk_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetChunkRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(StorageServiceServer).GetChunks(m, &grpc.GenericServerStream[GetChunksRequest, GetChunksResponse]{ServerStream: stream})
+	return srv.(StorageServiceServer).GetChunk(m, &grpc.GenericServerStream[GetChunkRequest, GetChunkResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StorageService_GetChunksServer = grpc.ServerStreamingServer[GetChunksResponse]
+type StorageService_GetChunkServer = grpc.ServerStreamingServer[GetChunkResponse]
 
 // StorageService_ServiceDesc is the grpc.ServiceDesc for StorageService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -146,8 +146,8 @@ var StorageService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "GetChunks",
-			Handler:       _StorageService_GetChunks_Handler,
+			StreamName:    "GetChunk",
+			Handler:       _StorageService_GetChunk_Handler,
 			ServerStreams: true,
 		},
 	},

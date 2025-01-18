@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,40 +13,62 @@ import (
 
 // UploadChunks method for upload chunks
 func (i *Implementation) UploadChunks(stream desc.StorageService_UploadChunksServer) error {
+	var chunkID string
+	tmpFile, err := os.CreateTemp("storage_dir", "temp-chunk-*")
+	if err != nil {
+		log.Printf("Failed to create temp file: %v", err)
+		return err
+	}
+	defer tmpFile.Close()
+
 	for {
 		req, err := stream.Recv()
 		if err == io.EOF {
-			return stream.SendAndClose(&desc.UploadChunksResponse{
-				Success: true,
-				Message: "All chunks uploaded successfully",
-			})
+			break
 		}
 		if err != nil {
+			if errors.Is(stream.Context().Err(), context.Canceled) {
+				log.Printf("Context canceled for chunk %s: %v", chunkID, stream.Context().Err())
+			}
 			log.Error().Msg(fmt.Sprintf("Failed to receive chunk: %v", err))
 			return err
 		}
 
-		err = saveChunk(req.GetChunkId(), req.GetData())
+		if chunkID == "" {
+			chunkID = req.GetChunkId()
+			log.Printf("Started receiving chunk %s", chunkID)
+		}
+
+		_, err = tmpFile.Write(req.GetData())
 		if err != nil {
-			msg := fmt.Sprintf("Failed to save chunk %s: %v", req.GetChunkId(), err)
-			log.Error().Msg(msg)
-			return stream.SendAndClose(&desc.UploadChunksResponse{
-				Success: false,
-				Message: msg,
-			})
+			log.Printf("Failed to write chunk %s: %v", chunkID, err)
+			return err
 		}
 	}
-	return nil
+
+	err = saveChunkToStorage(chunkID, tmpFile.Name())
+	if err != nil {
+		msg := fmt.Sprintf("Failed to save chunk %s: %v", chunkID, err)
+		log.Error().Msg(msg)
+		return stream.SendAndClose(&desc.UploadChunksResponse{
+			Success: false,
+			Message: msg,
+		})
+	}
+
+	return stream.SendAndClose(&desc.UploadChunksResponse{
+		Success: true,
+		Message: "All chunks uploaded successfully",
+	})
 }
 
-func saveChunk(chunkID string, data []byte) error {
-	fileName := "storage_dir/" + chunkID
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+func saveChunkToStorage(chunkID string, tempFilePath string) error {
+	finalPath := "storage_dir/" + chunkID
 
-	_, err = file.Write(data)
-	return err
+	err := os.Rename(tempFilePath, finalPath)
+	if err != nil {
+		return fmt.Errorf("failed to move chunk %s to storage: %w", chunkID, err)
+	}
+
+	return nil
 }
