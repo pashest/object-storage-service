@@ -80,3 +80,16 @@ install-go-deps: .install-go-deps
 		go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 		go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
 		go install github.com/envoyproxy/protoc-gen-validate
+
+
+.PHONY: migrate
+migrate: .install-migrate-deps .migrate
+
+.PHONY: .install-migrate-deps
+.install-migrate-deps:
+		go get github.com/pressly/goose/v3/cmd/goose
+		go install github.com/pressly/goose/v3/cmd/goose
+
+.PHONY: .migrate
+.migrate:
+		goose -dir ./migrations postgres "postgres://postgres:qwerty@localhost:5432/meta-service?sslmode=disable" up

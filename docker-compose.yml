@@ -21,6 +21,7 @@ services:
     networks:
       - object-storage-network
     depends_on:
+      - postgres
       - storage-server-1
       - storage-server-2
       - storage-server-3
@@ -29,6 +30,16 @@ services:
       - storage-server-6
     environment:
       STORAGE_SERVERS: "storage-server-1:50051,storage-server-2:50051,storage-server-3:50051,storage-server-4:50051,storage-server-5:50051,storage-server-6:50051"
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qwerty
+      POSTGRES_DB: meta-service
 
   storage-server-1:
     build:

@@ -5,6 +5,7 @@ import (
 
 	"github.com/pashest/object-storage-service/internal/client/helper"
 	"github.com/pashest/object-storage-service/internal/client/storage"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -55,7 +56,10 @@ func (p *ClientPool) RemoveConnection(address string) {
 	defer p.mu.Unlock()
 
 	if conn, exists := p.connections[address]; exists {
-		conn.Close()
+		err := conn.Close()
+		if err != nil {
+			log.Err(err).Msgf("Failed to close connection: %s", address)
+		}
 		delete(p.connections, address)
 		delete(p.helperPool, address)
 		delete(p.storagePool, address)

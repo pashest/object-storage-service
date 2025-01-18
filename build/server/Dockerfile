@@ -29,8 +29,11 @@ WORKDIR /home/developer/go/src/github.com/pashest/object-storage-service
 RUN make build-server
 
 FROM alpine:latest
+
 WORKDIR /root/
 COPY --from=builder /home/developer/go/src/github.com/pashest/object-storage-service/bin/server .
 RUN chown root:root server
+
 EXPOSE 8080
+
 ENTRYPOINT ["./server"]

@@ -3,6 +3,7 @@ package helper
 import (
 	"context"
 
+	"github.com/pashest/object-storage-service/internal/model"
 	desc "github.com/pashest/object-storage-service/pkg/helper"
 	"google.golang.org/grpc"
 )
@@ -18,11 +19,22 @@ func New(conn *grpc.ClientConn) *Client {
 }
 
 // Heartbeat method for checking health of storage server
-func (c *Client) Heartbeat(ctx context.Context) (*desc.HeartbeatResponse, error) {
+func (c *Client) Heartbeat(ctx context.Context) (*model.Heartbeat, error) {
 	res, err := c.client.Heartbeat(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	return protoHeartbeatToHeartbeat(res), nil
+}
+
+func protoHeartbeatToHeartbeat(hb *desc.HeartbeatResponse) *model.Heartbeat {
+	if hb == nil {
+		return nil
+	}
+	return &model.Heartbeat{
+		Alive:     hb.Alive,
+		Message:   hb.Message,
+		FreeSpace: hb.FreeSpace,
+	}
 }
