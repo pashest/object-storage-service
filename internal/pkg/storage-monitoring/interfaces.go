@@ -3,16 +3,17 @@ package storage_monitoring
 import (
 	"context"
 
-	"github.com/pashest/object-storage-service/internal/model"
+	"github.com/pashest/object-storage-service/internal/client/helper"
 )
 
 type (
 	connectionPool interface {
 		AddConnection(address string) error
 		RemoveConnection(address string)
-		GetHelperClient(address string) (helperClient, bool)
+		GetHelperClient(address string) (*helper.Client, bool)
 	}
-	helperClient interface {
-		Heartbeat(ctx context.Context) (*model.Heartbeat, error)
+
+	storageServersRepo interface {
+		AddServer(ctx context.Context, address string) error
 	}
 )

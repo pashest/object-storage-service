@@ -1,6 +1,6 @@
 module github.com/pashest/object-storage-service
 
-go 1.22.5
+go 1.23.6
 
 require (
 	github.com/Masterminds/squirrel v1.5.4

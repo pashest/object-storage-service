@@ -12,15 +12,15 @@ import (
 
 const maxMessageSize = 2 * 1024 * 1024 * 1024 // 2 GB
 
-type ClientPool struct {
+type ConnectionPool struct {
 	mu          sync.RWMutex
 	connections map[string]*grpc.ClientConn
 	helperPool  map[string]*helper.Client
 	storagePool map[string]*storage.Client
 }
 
-func NewClientPool() *ClientPool {
-	return &ClientPool{
+func NewConnectionPool() *ConnectionPool {
+	return &ConnectionPool{
 		connections: make(map[string]*grpc.ClientConn),
 		helperPool:  make(map[string]*helper.Client),
 		storagePool: make(map[string]*storage.Client),
@@ -28,7 +28,7 @@ func NewClientPool() *ClientPool {
 }
 
 // AddConnection add new connection
-func (p *ClientPool) AddConnection(address string) error {
+func (p *ConnectionPool) AddConnection(address string) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -51,7 +51,7 @@ func (p *ClientPool) AddConnection(address string) error {
 }
 
 // RemoveConnection remove connection
-func (p *ClientPool) RemoveConnection(address string) {
+func (p *ConnectionPool) RemoveConnection(address string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -67,7 +67,7 @@ func (p *ClientPool) RemoveConnection(address string) {
 }
 
 // GetHelperClient get available helper client
-func (p *ClientPool) GetHelperClient(address string) (*helper.Client, bool) {
+func (p *ConnectionPool) GetHelperClient(address string) (*helper.Client, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
@@ -76,7 +76,7 @@ func (p *ClientPool) GetHelperClient(address string) (*helper.Client, bool) {
 }
 
 // GetStorageClient get available storage client
-func (p *ClientPool) GetStorageClient(address string) (*storage.Client, bool) {
+func (p *ConnectionPool) GetStorageClient(address string) (*storage.Client, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 

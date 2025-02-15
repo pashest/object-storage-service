@@ -20,6 +20,8 @@ services:
       - "8080:8080"
     networks:
       - object-storage-network
+    command: >
+      sh -c "migration.sh"
     depends_on:
       - postgres
       - storage-server-1

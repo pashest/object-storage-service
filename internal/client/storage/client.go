@@ -22,8 +22,8 @@ func New(conn *grpc.ClientConn) *Client {
 	return &Client{client: desc.NewStorageServiceClient(conn)}
 }
 
-// UploadChunks method for upload chunks
-func (c *Client) UploadChunks(ctx context.Context, chunkID string, reader io.Reader, chunkSize int64) error {
+// UploadChunk method for upload chunks
+func (c *Client) UploadChunk(ctx context.Context, chunkID string, reader io.Reader, chunkSize int64) error {
 	log.Printf("Chunk size: %d", chunkSize)
 	stream, err := c.client.UploadChunks(ctx)
 	if err != nil {

@@ -3,6 +3,8 @@ package storage_monitoring
 import (
 	"container/heap"
 	"context"
+	"fmt"
+	"net"
 	"sync"
 	"time"
 
@@ -11,15 +13,28 @@ import (
 
 // Service ...
 type Service struct {
+	storageHeap        StorageHeap
+	storageServersRepo storageServersRepo
+	host               string
+	port               int32
+
 	connectionPool connectionPool
 	mu             sync.RWMutex
-	storageHeap    StorageHeap
 }
 
 // New return new instance of Service
-func New(ctx context.Context, connectionPool connectionPool) *Service {
+func New(
+	ctx context.Context,
+	connectionPool connectionPool,
+	storageServersRepo storageServersRepo,
+	host string,
+	port int32,
+) *Service {
 	s := &Service{
-		connectionPool: connectionPool,
+		connectionPool:     connectionPool,
+		storageServersRepo: storageServersRepo,
+		host:               host,
+		port:               port,
 	}
 	heap.Init(&s.storageHeap)
 
@@ -29,11 +44,17 @@ func New(ctx context.Context, connectionPool connectionPool) *Service {
 }
 
 // AddServer adds new storage server
-func (s *Service) AddServer(address string) error {
+func (s *Service) AddServer(ctx context.Context, address string) error {
 	err := s.connectionPool.AddConnection(address)
 	if err != nil {
 		return err
 	}
+
+	err = s.storageServersRepo.AddServer(ctx, address)
+	if err != nil {
+		return err
+	}
+
 	s.UpdateStorageHeap(address, 0)
 
 	return nil
@@ -41,10 +62,7 @@ func (s *Service) AddServer(address string) error {
 
 // heartbeatHandler checks storage servers
 func (s *Service) heartbeatHandler(ctx context.Context) error {
-	storageServers := make([]StorageServer, 0)
-	s.mu.RLock()
-	_ = copy(storageServers, s.storageHeap)
-	s.mu.RUnlock()
+	storageServers := s.GetStorageServers()
 	for _, server := range storageServers {
 		helperClnt, exist := s.connectionPool.GetHelperClient(server.Address)
 		if !exist {
@@ -70,8 +88,42 @@ func (s *Service) heartbeatHandler(ctx context.Context) error {
 	return nil
 }
 
+// monitorHandler monitor storage servers
+func (s *Service) monitorHandler(ctx context.Context) error {
+	addrs, err := net.LookupHost(s.host)
+	if err != nil {
+		log.Error().Msgf("Failed to lookup host: %s, err: %v", s.host, err)
+	}
+	storageServers := s.GetStorageServers()
+
+	serversMap := make(map[string]struct{}, len(storageServers))
+	for _, serv := range storageServers {
+		serversMap[serv.Address] = struct{}{}
+	}
+
+	for _, addr := range addrs {
+		addr = fmt.Sprintf("%s:%d", addr, s.port)
+		if _, ok := serversMap[addr]; !ok {
+			err = s.AddServer(ctx, addr)
+			if err != nil {
+				log.Error().Msgf("Failed to add server: %s err: %v", addr, err)
+			}
+		}
+	}
+	return nil
+}
+
 func (s *Service) startHeartbeat(ctx context.Context) {
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		s.heartbeatHandler(ctx)
+	}
+}
+
+func (s *Service) monitorServers(ctx context.Context) {
+	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {

@@ -69,3 +69,11 @@ func (s *Service) GetBestStorageServerAddress() (address string, err error) {
 
 	return serv.Address, nil
 }
+
+func (s *Service) GetStorageServers() []StorageServer {
+	storageServers := make([]StorageServer, 0)
+	s.mu.RLock()
+	_ = copy(storageServers, s.storageHeap)
+	s.mu.RUnlock()
+	return storageServers
+}

@@ -1,10 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE EXTENSION IF NOT EXISTS "pgcrypto"
-
 CREATE TABLE IF NOT EXISTS storage_servers (
-    server_uid  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    address     TEXT NOT NULL
+    address  TEXT NOT NULL PRIMARY KEY,
 );
 -- +goose StatementEnd
 
