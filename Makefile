@@ -77,8 +77,4 @@ install-go-deps: .install-go-deps
 		go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
 		go install github.com/envoyproxy/protoc-gen-validate
 
-.PHONY: install-migrate-deps
-.install-migrate-deps:
-		go get github.com/pressly/goose/v3/cmd/goose
-		go install github.com/pressly/goose/v3/cmd/goose
 

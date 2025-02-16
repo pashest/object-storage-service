@@ -20,94 +20,36 @@ services:
       - "8080:8080"
     networks:
       - object-storage-network
-    command: >
-      sh -c "migration.sh"
     depends_on:
       - postgres
-      - storage-server-1
-      - storage-server-2
-      - storage-server-3
-      - storage-server-4
-      - storage-server-5
-      - storage-server-6
-    environment:
-      STORAGE_SERVERS: "storage-server-1:50051,storage-server-2:50051,storage-server-3:50051,storage-server-4:50051,storage-server-5:50051,storage-server-6:50051"
+      - storage-server
 
   postgres:
     image: postgres:latest
     restart: always
     ports:
       - "5432:5432"
+    networks:
+      - object-storage-network
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: qwerty
       POSTGRES_DB: meta-service
 
-  storage-server-1:
+  storage-server:
     build:
       context: .
       dockerfile: build/storage-server/Dockerfile
     ports:
-      - "50051:50051"
+      - "50050-50070:50051"
     networks:
       - object-storage-network
-    volumes:
-      - ./data/storage-1:/app/storage
-
-  storage-server-2:
-    build:
-      context: .
-      dockerfile: build/storage-server/Dockerfile
-    ports:
-      - "50052:50051"
-    networks:
-      - object-storage-network
-    volumes:
-      - ./data/storage-2:/app/storage
-
-  storage-server-3:
-    build:
-      context: .
-      dockerfile: build/storage-server/Dockerfile
-    ports:
-      - "50053:50051"
-    networks:
-      - object-storage-network
-    volumes:
-      - ./data/storage-3:/app/storage
-
-  storage-server-4:
-    build:
-      context: .
-      dockerfile: build/storage-server/Dockerfile
-    ports:
-      - "50054:50051"
-    networks:
-      - object-storage-network
-    volumes:
-      - ./data/storage-4:/app/storage
-
-  storage-server-5:
-    build:
-      context: .
-      dockerfile: build/storage-server/Dockerfile
-    ports:
-      - "50055:50051"
-    networks:
-      - object-storage-network
-    volumes:
-      - ./data/storage-5:/app/storage
-
-  storage-server-6:
-    build:
-      context: .
-      dockerfile: build/storage-server/Dockerfile
-    ports:
-      - "50056:50051"
-    networks:
-      - object-storage-network
-    volumes:
-      - ./data/storage-6:/app/storage
+    deploy:
+      mode: replicated
+      replicas: 6
+      resources:
+        limits:
+          memory: 4G
 
 networks:
   object-storage-network:

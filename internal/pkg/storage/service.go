@@ -43,6 +43,7 @@ func (s Service) UploadFile(ctx context.Context, file io.Reader, fileInfo model.
 
 	existChunksMap := make(map[int16]int64, chunkCount)
 	if exFileInfo != nil {
+		fileInfo.FileUID = exFileInfo.FileUID
 		if exFileInfo.Status == model.FileCompletelyUploaded || exFileInfo.FileSize != fileInfo.FileSize {
 			// TODO: create new file with serial number (versions)
 			return fmt.Errorf("UploadFile: there is already a file with that name: %s", fileInfo.FileName)
@@ -102,23 +103,65 @@ func (s Service) processFile(
 			continue
 		}
 
-		storageServer, err := s.storageMonitoringService.GetBestStorageServerAddress()
+		err := s.uploadChunk(ctx, file, fileInfo, chunkSize, i)
 		if err != nil {
-			return fmt.Errorf("failed to get storage server, err: %v", err)
-		}
-
-		if clnt, ok := s.connectionPool.GetStorageClient(storageServer); ok {
-			chunkName := s.getChunkName(fileInfo.FileUID, i)
-			log.Printf("Starting UploadChunk %s bytes: %d", chunkName, chunkSize)
-			err = clnt.UploadChunk(ctx, chunkName, file, chunkSize)
-			if err != nil {
-				return fmt.Errorf("failed to upload chunk %s, err: %v", chunkName, err)
-			}
-			log.Printf("Chunk %s uploaded successfully", chunkName)
-		} else {
-			return fmt.Errorf("storage client not found for server: %s", storageServer)
+			return errors.Wrapf(err, "processFile: uploadChunk %d", i)
 		}
 	}
+
+	return nil
+}
+
+func (s Service) uploadChunk(
+	ctx context.Context,
+	file io.Reader,
+	fileInfo model.FileInfo,
+	chunkSize int64,
+	chunkNumber int16,
+) error {
+	chunkName := s.getChunkName(fileInfo.FileUID, chunkNumber)
+	storageServer, err := s.storageMonitoringService.GetBestStorageServerAddress()
+	if err != nil {
+		return fmt.Errorf("failed to get storage server, err: %v", err)
+	}
+
+	clnt, ok := s.connectionPool.GetStorageClient(storageServer)
+	if !ok {
+		return fmt.Errorf("storage client not found for server: %s", storageServer)
+	}
+
+	log.Printf("Starting UploadChunk %s bytes: %d", chunkName, chunkSize)
+	tx, err := s.filesRepo.BeginTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction, err: %v", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = s.filesRepo.RollbackTx(ctx, tx)
+		}
+	}()
+
+	s.filesRepo.AddChunkInfoInTx(ctx, tx,
+		model.ChunkInfo{
+			ChunkName:     chunkName,
+			FileUID:       fileInfo.FileUID,
+			ChunkNumber:   chunkNumber,
+			ChunkSize:     chunkSize,
+			ServerAddress: storageServer,
+		},
+	)
+
+	err = clnt.UploadChunk(ctx, chunkName, file, chunkSize)
+	if err != nil {
+		return fmt.Errorf("failed to upload chunk %s, err: %v", chunkName, err)
+	}
+
+	err = s.filesRepo.CommitTx(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction, err: %v", err)
+	}
+
+	log.Printf("Chunk %s uploaded successfully", chunkName)
 
 	return nil
 }

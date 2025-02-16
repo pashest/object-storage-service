@@ -41,16 +41,17 @@ func New(pool *pgxpool.Pool) *Repository {
 // }
 
 func (r *Repository) AddServer(ctx context.Context, address string) error {
-	sql, arg, err := db.PgQb().
+	sql, args, err := db.PgQb().
 		Insert(tableName).
 		Columns("address").
 		Values(address).
+		Suffix("on conflict (address) do nothing").
 		ToSql()
 	if err != nil {
 		return err
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, arg)
+	_, err = r.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return err
 	}

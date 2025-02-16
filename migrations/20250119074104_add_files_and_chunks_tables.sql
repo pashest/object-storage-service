@@ -1,9 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE EXTENSION IF NOT EXISTS "pgcrypto"
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE IF NOT EXISTS file_info (
-    file_uid   UUID DEFAULT gen_random_uuid()
+    file_uid   UUID DEFAULT gen_random_uuid() UNIQUE,
     file_name  TEXT NOT NULL,
     user_id    TEXT NOT NULL,
     file_size  BIGINT NOT NULL,
@@ -22,12 +22,12 @@ CREATE TABLE IF NOT EXISTS chunk_info (
     server_address TEXT NOT NULL,
     created_at     TIMESTAMPTZ DEFAULT now() NOT NULL,
 
-    FOREIGN KEY (file_uid) REFERENCES file_info (file_uid),
+    FOREIGN KEY (file_uid) REFERENCES file_info (file_uid)
 );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS files;
-DROP TABLE IF EXISTS chunks;
+DROP TABLE IF EXISTS file_info;
+DROP TABLE IF EXISTS chunk_info;
 -- +goose StatementEnd

@@ -19,20 +19,23 @@ RUN echo developer | sudo -S DEBIAN_FRONTEND="noninteractive" apt install -y gol
 RUN echo developer | sudo -S apt install -y make git vim
 
 ENV GOPATH /home/developer/go
-ENV PATH $PATH:/home/developer/go/bin
+ENV GOBIN $GOPATH/bin
+ENV PATH $PATH:$GOBIN
 
 COPY . /home/developer/go/src/github.com/pashest/object-storage-service
 RUN echo developer | sudo -S chown -R developer /home/developer/
 
 WORKDIR /home/developer/go/src/github.com/pashest/object-storage-service
 
-RUN make install-migrate-deps
 RUN make build-server
 
 FROM alpine:latest
 
 WORKDIR /root/
+
 COPY --from=builder /home/developer/go/src/github.com/pashest/object-storage-service/bin/server .
+COPY --from=builder /home/developer/go/src/github.com/pashest/object-storage-service/migrations ./migrations
+COPY --from=builder /home/developer/go/src/github.com/pashest/object-storage-service/config.yaml .
 
 RUN chown root:root server
 

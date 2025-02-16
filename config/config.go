@@ -16,7 +16,8 @@ type MetaService struct {
 }
 
 type Database struct {
-	Address string `yaml:"address"`
+	Address    string `yaml:"address"`
+	Migrations string `yaml:"migrations"`
 }
 
 // GetConfig - get config from config file

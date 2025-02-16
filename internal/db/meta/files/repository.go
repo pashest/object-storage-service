@@ -18,8 +18,8 @@ type Repository struct {
 }
 
 const (
-	fileTableName  = "files_info"
-	chunkTableName = "chunks_info"
+	fileTableName  = "file_info"
+	chunkTableName = "chunk_info"
 )
 
 // New return new instance of Repository
@@ -53,7 +53,7 @@ func (r *Repository) AddFileInfo(ctx context.Context, file model.FileInfo) (stri
 	}
 
 	var fileUID string
-	err = r.Pool.QueryRow(ctx, sql, args).Scan(&fileUID)
+	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&fileUID)
 	if err != nil {
 		return "", err
 	}
@@ -68,14 +68,14 @@ func (r *Repository) UpdateFileInfo(ctx context.Context, file model.FileInfo) er
 			"status":     file.Status,
 			"updated_at": time.Now(),
 		}).
-		Where(squirrel.Eq{"f.file_name": file.FileName}).
-		Where(squirrel.Eq{"f.user_id": file.User}).
+		Where(squirrel.Eq{"file_name": file.FileName}).
+		Where(squirrel.Eq{"user_id": file.User}).
 		ToSql()
 	if err != nil {
 		return err
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, args)
+	_, err = r.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (r *Repository) GetFileInfoByFileNameAndUser(ctx context.Context, fileName,
 	}
 
 	var info model.FileInfo
-	err = r.Pool.QueryRow(ctx, sql, args).Scan(&info.FileUID, &info.FileSize, &info.Status)
+	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&info.FileUID, &info.FileSize, &info.Status)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -110,7 +110,7 @@ func (r *Repository) GetFileInfoByFileNameAndUser(ctx context.Context, fileName,
 	return &info, err
 }
 
-func (r *Repository) AddChunkInfo(ctx context.Context, chunk model.ChunkInfo) error {
+func (r *Repository) AddChunkInfoInTx(ctx context.Context, tx pgx.Tx, chunk model.ChunkInfo) error {
 	sql, args, err := db.PgQb().
 		Insert(chunkTableName).
 		Columns(
@@ -135,7 +135,7 @@ func (r *Repository) AddChunkInfo(ctx context.Context, chunk model.ChunkInfo) er
 		return err
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, args)
+	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (r *Repository) GetChunksInfoByFileNameAndUser(ctx context.Context, fileNam
 
 	var chunks []model.ChunkInfo
 
-	rows, err := r.Pool.Query(ctx, sql, args)
+	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -172,4 +172,16 @@ func (r *Repository) GetChunksInfoByFileNameAndUser(ctx context.Context, fileNam
 
 	chunks, err = pgx.CollectRows(rows, pgx.RowToStructByName[model.ChunkInfo])
 	return chunks, err
+}
+
+func (r *Repository) BeginTx(ctx context.Context) (pgx.Tx, error) {
+	return r.Begin(ctx)
+}
+
+func (r *Repository) CommitTx(ctx context.Context, tx pgx.Tx) error {
+	return tx.Commit(ctx)
+}
+
+func (r *Repository) RollbackTx(ctx context.Context, tx pgx.Tx) error {
+	return tx.Rollback(ctx)
 }

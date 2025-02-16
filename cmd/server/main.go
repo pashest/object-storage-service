@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// TODO: graceful shutdown
 func main() {
 	ctx := context.Background()
 
@@ -33,6 +34,7 @@ func main() {
 	fileRepo := files.New(dbPool)
 
 	// Services
+	// TODO: host and port to env config
 	storageMonitoringService := storagemonitoring.New(ctx, connectionPool, storageServRepo, "storage-server", 50051)
 	storageService := storage.New(storageMonitoringService, fileRepo, connectionPool)
 

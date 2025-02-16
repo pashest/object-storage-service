@@ -38,6 +38,7 @@ func New(
 	}
 	heap.Init(&s.storageHeap)
 
+	go s.monitorServers(ctx)
 	go s.startHeartbeat(ctx)
 
 	return s
@@ -114,6 +115,7 @@ func (s *Service) monitorHandler(ctx context.Context) error {
 }
 
 func (s *Service) startHeartbeat(ctx context.Context) {
+	log.Print("Starting Heartbeat")
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -123,10 +125,11 @@ func (s *Service) startHeartbeat(ctx context.Context) {
 }
 
 func (s *Service) monitorServers(ctx context.Context) {
-	ticker := time.NewTicker(time.Second)
+	log.Print("Starting monitorServers")
+	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		s.heartbeatHandler(ctx)
+		s.monitorHandler(ctx)
 	}
 }

@@ -1,3 +1,4 @@
 meta_service:
   db:
-    address: postgres://postgres:qwerty@localhost:5432/meta-service
+    address: postgres://postgres:qwerty@postgres:5432/meta-service
+    migrations: ./migrations

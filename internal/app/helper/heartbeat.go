@@ -12,7 +12,7 @@ import (
 
 // Heartbeat method for checking health of storage server
 func (i *Implementation) Heartbeat(_ context.Context, _ *emptypb.Empty) (*desc.HeartbeatResponse, error) {
-	freeSpace, err := utils.GetFreeDiskSpace("/path")
+	freeSpace, err := utils.GetFreeDiskSpace("./storage_dir")
 	if err != nil {
 		msg := fmt.Sprintf("Heartbeat: failed to get disk space: %v", err)
 		log.Error().Msg(msg)

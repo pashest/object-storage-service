@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS storage_servers (
-    address  TEXT NOT NULL PRIMARY KEY,
+    address  TEXT NOT NULL PRIMARY KEY
 );
 -- +goose StatementEnd
 
