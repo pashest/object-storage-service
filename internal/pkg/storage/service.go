@@ -141,7 +141,7 @@ func (s Service) uploadChunk(
 		}
 	}()
 
-	s.filesRepo.AddChunkInfoInTx(ctx, tx,
+	err = s.filesRepo.AddChunkInfoInTx(ctx, tx,
 		model.ChunkInfo{
 			ChunkName:     chunkName,
 			FileUID:       fileInfo.FileUID,
@@ -150,6 +150,9 @@ func (s Service) uploadChunk(
 			ServerAddress: storageServer,
 		},
 	)
+	if err != nil {
+		return fmt.Errorf("AddChunkInfoInTx chunk %s, err: %v", chunkName, err)
+	}
 
 	err = clnt.UploadChunk(ctx, chunkName, file, chunkSize)
 	if err != nil {
