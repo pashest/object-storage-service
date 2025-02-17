@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/pashest/object-storage-service/config"
 	"github.com/pashest/object-storage-service/internal/client"
@@ -14,9 +17,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TODO: graceful shutdown
 func main() {
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
 	cfg, err := config.GetConfig()
 	if err != nil {
@@ -24,10 +27,13 @@ func main() {
 	}
 
 	connectionPool := client.NewConnectionPool()
+	defer connectionPool.Close()
+
 	dbPool, err := meta.NewConnectionPool(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to get db pool")
 	}
+	defer dbPool.Close()
 
 	// Repositories
 	storageServRepo := storageservers.New(dbPool)
@@ -40,8 +46,36 @@ func main() {
 
 	server := server.NewServer(storageService)
 
-	log.Printf("Starting server on %s", ":8080")
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal().Err(err)
+	if err = runServer(ctx, server); err != nil {
+		log.Fatal().Msgf("Failed to serve HTTP server: %v", err)
 	}
+}
+
+func runServer(ctx context.Context, server *server.Server) error {
+	srvErr := make(chan error, 1)
+	go func() {
+		log.Info().Msg("Server is running on port 8080...")
+		if err := server.ListenAndServe(); err != nil {
+			srvErr <- err
+		}
+	}()
+
+	select {
+	case err := <-srvErr:
+		log.Error().Err(err).Msg("HTTP Server")
+		return err
+	case <-ctx.Done():
+		log.Info().Msg("Shutdown signal received, stopping server...")
+
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Error().Err(err).Msg("Failed to gracefully shutdown server")
+		}
+
+		log.Info().Msg("HTTP Server was closed")
+	}
+
+	return nil
 }

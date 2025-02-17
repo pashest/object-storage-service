@@ -18,8 +18,8 @@ type Server struct {
 	storageService storageService
 }
 
-func NewServer(storageService storageService) Server {
-	s := Server{
+func NewServer(storageService storageService) *Server {
+	s := &Server{
 		storageService: storageService,
 	}
 

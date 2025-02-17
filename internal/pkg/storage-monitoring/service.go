@@ -78,10 +78,12 @@ func (s *Service) heartbeatHandler(ctx context.Context) error {
 			log.Error().Msgf("Failed to get heartbeat from server: %s", server.Address)
 		}
 
-		if !heartbeat.Alive {
-			log.Error().Msgf("Heartbeat failed. Server: %s Msg: %s", server.Address, heartbeat.Message)
-		} else {
-			freeSpace = heartbeat.FreeSpace
+		if heartbeat != nil {
+			if !heartbeat.Alive {
+				log.Error().Msgf("Heartbeat failed. Server: %s Msg: %s", server.Address, heartbeat.Message)
+			} else {
+				freeSpace = heartbeat.FreeSpace
+			}
 		}
 
 		s.UpdateStorageHeap(server.Address, freeSpace)

@@ -66,6 +66,21 @@ func (p *ConnectionPool) RemoveConnection(address string) {
 	}
 }
 
+func (p *ConnectionPool) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	for addr, conn := range p.connections {
+		if conn != nil {
+			conn.Close()
+			delete(p.connections, addr)
+		}
+	}
+
+	p.helperPool = nil
+	p.storagePool = nil
+}
+
 // GetHelperClient get available helper client
 func (p *ConnectionPool) GetHelperClient(address string) (*helper.Client, bool) {
 	p.mu.RLock()
