@@ -59,8 +59,17 @@ func (s Server) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	reader, writer := io.Pipe()
+
+	go func() {
+		defer writer.Close()
+		if _, err := io.Copy(writer, r.Body); err != nil {
+			log.Error().Msgf("Error writing to pipe, err: %v", err)
+		}
+	}()
+
 	log.Print("Starting UploadFile file")
-	err := s.storageService.UploadFile(ctx, r.Body,
+	err := s.storageService.UploadFile(ctx, reader,
 		model.FileInfo{
 			FileName: fileName,
 			User:     user,
