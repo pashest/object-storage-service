@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,7 +44,6 @@ func NewServer(storageService storageService) *Server {
 }
 
 func (s Server) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
 	r.Body = http.MaxBytesReader(w, r.Body, 10<<30)
 	fileSize := r.ContentLength
 	user := r.Header.Get("Username")
@@ -69,7 +67,7 @@ func (s Server) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	log.Print("Starting UploadFile file")
-	err := s.storageService.UploadFile(ctx, reader,
+	err := s.storageService.UploadFile(r.Context(), reader,
 		model.FileInfo{
 			FileName: fileName,
 			User:     user,
@@ -85,8 +83,6 @@ func (s Server) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Server) downloadFileHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
-
 	user := r.Header.Get("Username")
 	if user == "" {
 		user = "user"
@@ -98,7 +94,7 @@ func (s Server) downloadFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reader, err := s.storageService.DownloadFile(ctx,
+	reader, err := s.storageService.DownloadFile(r.Context(),
 		model.FileInfo{
 			FileName: fileName,
 			User:     user,

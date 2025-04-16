@@ -35,7 +35,6 @@ func New(
 }
 
 func (s Service) UploadFile(ctx context.Context, file io.Reader, fileInfo model.FileInfo) error {
-	// TODO: exec in Tx
 	exFileInfo, err := s.filesRepo.GetFileInfoByFileNameAndUser(ctx, fileInfo.FileName, fileInfo.User)
 	if err != nil {
 		return errors.Wrap(err, "UploadFile: GetFileInfoByFileNameAndUser")
